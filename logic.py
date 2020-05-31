@@ -85,6 +85,7 @@ xx, yy = np.meshgrid(grid_x_coords, grid_y_coords)
 
 pcm = ax.pcolormesh(xx, yy, np.array(beampowers).reshape(len(grid_x_coords), len(grid_y_coords)).T, vmin=np.min(beampowers), vmax=np.max(beampowers))
 ax.scatter(sta_lons, sta_lats, c='k', marker='^')
+ax.scatter(synth_source[0], synth_source[1], c='red', edgecolors='k', lw=.5)
 
 ax.set_xlim(-2, 2)
 ax.set_ylim(-2, 2)
@@ -93,4 +94,5 @@ x0, y0, w, h = ax.get_position().bounds
 cbax = fig.add_axes([x0 + w + .05*w, y0, .05*w, h])
 cbar = plt.colorbar(pcm, cax=cbax)
 
+plt.show(fig)
 plt.close(fig)
