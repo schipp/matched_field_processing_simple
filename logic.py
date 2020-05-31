@@ -41,6 +41,8 @@ for gp in grid_points:
     a = np.linalg.norm(station_locations - gp, ord=2, axis=1)
     synth_spectra = []
     
+    # how to parallelize this?
+    # would be great if possible to push into matrix formulation - think tomorrow
     B_as = []
     for i, sta1 in enumerate(station_locations):
         for j, sta2 in enumerate(station_locations):
@@ -50,15 +52,16 @@ for gp in grid_points:
             B_as.append(B_ai_aj)
             # if i != j:
             #     break
+    beampowers.append(np.sum(B_as))
     
     # for _ in a:
+    #     synth_spectrum_j = np.exp(-1j * freqs * a[j]/vel)[freqs_of_interest]
     #     synth_spectra.append(synth_spectrum)
     #     B_as.append(B_a)
-    beampowers.append(np.sum(B_as))
-    # synth_spectra = np.array(synth_spectra)
-    
+    # # synth_spectra = np.array(synth_spectra)
+    # 
     # # matrix multiplication try
-    # B = np.abs(np.conj(synth_spectra) * csdm * synth_spectra)
+    # B = np.real(np.conj(synth_spectra) * csdm * synth_spectra)
     # B = B.reshape(n_stations**2, len(freqs[freqs_of_interest]))
     # B_freq_sum = np.sum(B, axis=1)
     # B_sta_sum = np.sum(B_freq_sum)
