@@ -4,7 +4,7 @@ Determine nearby sources of seismic signal from dense array data using "Matched 
 
 For now, this is a synthetic demonstration. Eventually, I will expand this to real data.
 
-The current code follows the methodology detailed in Umlauft & Korn (2019)
+The current code follows the methodology detailed in Umlauft & Korn (2019).
 
 > Umlauft, J., & Korn, M. (2019). 3-D fluid channel location from noise tremors using matched field processing. Geophysical Journal International, 219(3), 1550–1561. [doi](http://doi.org/10.1093/gji/ggz385)
 
