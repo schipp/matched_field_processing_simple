@@ -39,10 +39,10 @@ def get_csdm(spectra:np.ndarray) -> np.ndarray:
     """
     
     # einstein convention version
-    csdm = np.einsum('ik,jk->ijk', source_spectra, np.conj(source_spectra))
+    csdm = np.einsum('ik,jk->ijk', spectra, np.conj(spectra))
 
     # # old slow version
-    # csdm = np.zeros((n_stations, n_stations, len(freqs[freqs_of_interest])), dtype=np.complex)
+    # csdm = np.zeros((n_stations, n_stations, len(freqs[freqs_of_interest_idx])), dtype=np.complex)
     # for i, spec1 in enumerate(source_spectra):
     #     for j, spec2 in enumerate(source_spectra):
     #         csdm[i, j] = spec1 * np.conj(spec2)
@@ -83,7 +83,7 @@ def bartlett_processor(csdm, gf_spectra):
 
     return beampower
 
-def get_beampowers(csdm, gf_spectra, gp_dists):
+def get_beampowers(csdm, gf_spectra, gp_dists, relevant_dists):
     """
     Computes the Beampower for all grid-points.
     """
@@ -113,7 +113,7 @@ if __name__ == '__main__':
     voxel_confidence = .99
 
     # geometry / structure
-    # TODO: determine lower bounds for grid geometry
+    # TODO: determine lower bounds for grid geometry that can be resolved
     grid_limits_x = (-2, 2)
     grid_limits_y = (-2, 2)
     grid_limits_z = (0, 4)
@@ -123,8 +123,7 @@ if __name__ == '__main__':
     vel = .1
 
     # decimals to round distances to
-    # TODO: Dynamically determine maximum reasonable accuracy
-    # should probably be dependent on spatial nyquist?
+    # TODO: Dynamically determine maximum reasonable accuracy, similar to above
     decimal_round = 2
 
     # data
@@ -134,6 +133,7 @@ if __name__ == '__main__':
 
     # synth example
     n_stations = 30
+    # place source somewhere in study region and below depth = 2
     synth_source_x = np.random.uniform(low=grid_limits_x[0], high=grid_limits_x[1])
     synth_source_y = np.random.uniform(low=grid_limits_y[0], high=grid_limits_y[1])
     synth_source_z = np.random.uniform(low=2, high=grid_limits_z[1])
@@ -148,11 +148,11 @@ if __name__ == '__main__':
     # compute fft frequencies
     from scipy.fftpack import fftfreq
     freqs = fftfreq(n_samples, sampling_rate)
-    freqs_of_interest = (freqs >= fmin) & (freqs <= fmax)
+    freqs_of_interest_idx = (freqs >= fmin) & (freqs <= fmax)
 
     # compute synthetic spectra
     dists_to_src = get_distances(list_of_locs=station_locations, point=synth_source)
-    source_spectra = np.array([get_gf_spectrum(freqs, dist, vel)[freqs_of_interest] for dist in dists_to_src])
+    source_spectra = np.array([get_gf_spectrum(freqs, dist, vel)[freqs_of_interest_idx] for dist in dists_to_src])
 
     grid_points, grid_x_coords, grid_y_coords, grid_z_coords = generate_grid(
         grid_limits=(grid_limits_x, grid_limits_y, grid_limits_z), 
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     # extract relevant distances only
     relevant_dists = np.unique(gp_dists)
 
-    # compute Green's Functions (spectra)
+    # compute Green's Functions spectra
     gf_spectra = get_gf_spectra_for_dists(
         freqs=freqs,
         vel=vel,
@@ -181,13 +181,14 @@ if __name__ == '__main__':
         )
 
     # limit Green's Functions spectra to frequencies of interest
-    gf_spectra = gf_spectra[:, freqs_of_interest]
+    gf_spectra = gf_spectra[:, freqs_of_interest_idx]
 
     # compute beampowers
     beampowers = get_beampowers(
         csdm=csdm,
         gf_spectra=gf_spectra,
-        gp_dists=gp_dists
+        gp_dists=gp_dists,
+        relevant_dists=relevant_dists
         )
 
     # np.argmax(beampowers)
